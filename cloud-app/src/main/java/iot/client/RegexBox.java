@@ -37,7 +37,6 @@ public class RegexBox {
                 "^\\s*read" + "\\s+" + ipv6PatternString + "\\s+" + coapResourcePathPatternString + "\\s*" + "$",
         readT2PatternString = 
                 "^\\s*read" + "\\s+" + coapResourceTypePatternString + "\\s*" + "$";
-        System.out.println(readT1PatternString);
     
 	    NUMBER_PATTERN = Pattern.compile(numberPatternString);
 	    IPV6_STD_PATTERN = Pattern.compile(ipv6StdPatternString);

@@ -8,7 +8,7 @@
 #define LOG_MODULE "PIR"
 #define LOG_LEVEL LOG_LEVEL_APP
 
-static int counter = 0;
+static unsigned long act_counter = 0;
 
 // Forward declarations
 static void res_event_handler(void);
@@ -27,9 +27,7 @@ EVENT_RESOURCE(res_pir,
 
 static void res_event_handler(void)
 {
-    LOG_DBG("about to notify observers\n");
-    counter++;
-    // Notify all the observers
+    act_counter++;
     coap_notify_observers(&res_pir);
 }
 
@@ -40,6 +38,6 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
 {
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_payload(response, buffer, snprintf((char *)buffer, 
-                     preferred_size, "EVENT %lu", 
-                     (unsigned long) counter));
+                     preferred_size, "%lu", 
+                     (unsigned long)act_counter));
 }

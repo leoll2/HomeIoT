@@ -28,6 +28,5 @@ public abstract class Command {
      *      a String containing the output of the executed command, null if 
      *      an unexpected error occurred
      */
-    protected abstract String execute(CloudAppCoapClient app_coap_client,
-    								  ResourceDirectory res_dir);
+    protected abstract String execute(ResourceDirectory res_dir);
 }

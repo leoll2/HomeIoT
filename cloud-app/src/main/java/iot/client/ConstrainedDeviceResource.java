@@ -12,13 +12,17 @@ import iot.client.commands.ReadCommand;
 import iot.client.resources.Lightbulb;
 import iot.client.resources.Pir;
 
-public class ConstrainedDeviceResource {
+public abstract class ConstrainedDeviceResource {
 
 	private String path; 	// location of the resource (unique per device)
 	private String title;	// human-readable description
 	private String rt; 		// resource type, semantic type of the resource
 	private String ops; 	// description of allowed operations
+	private String ip; 		// ip of the device exposing this resource
 	private Date exp_time;	// expiration time
+	private ResourceCoapClient coap_client; // CoAP client to handle operations on the resource
+	private Thread coap_client_thread; 		// thread for the CoAP client
+	
 	private static ArrayList<Class<? extends ConstrainedDeviceResource>> res_types;
 	
 	private static final long MILLIS_PER_MINUTE = 60000;
@@ -30,15 +34,19 @@ public class ConstrainedDeviceResource {
     	res_types.add(Pir.class);
     }
 	
-	protected ConstrainedDeviceResource(String path, String title, String rt, String ops) {
+	protected ConstrainedDeviceResource(String path, String title, String rt, String ops, String ip) {
 		this.path = path;
 		this.title = title;
 		this.rt = rt;
 		this.ops = ops;
+		this.ip = ip;
 		this.refresh();
+		this.coap_client = new ResourceCoapClient(ip, path, this);
+		this.coap_client_thread = new Thread(this.coap_client);
+		this.coap_client_thread.start();
 	}
 	
-	public static ConstrainedDeviceResource getResource(String path, String title, String rt, String ops) {
+	public static ConstrainedDeviceResource getResource(String path, String title, String rt, String ops, String ip) {
 		
 		ConstrainedDeviceResource res = null;
 		
@@ -52,8 +60,8 @@ public class ConstrainedDeviceResource {
                
                 // If it corresponds, get the constructor and create a new instance
                 if (signatureMatches) {
-                    Constructor ctr = r.getConstructor(String.class, String.class, String.class, String.class);
-                    res = (ConstrainedDeviceResource)ctr.newInstance(path, title, rt, ops);
+                    Constructor ctr = r.getConstructor(String.class, String.class, String.class, String.class, String.class);
+                    res = (ConstrainedDeviceResource)ctr.newInstance(path, title, rt, ops, ip);
                     break;
                 }
             } catch(NoSuchMethodException e) {
@@ -85,6 +93,8 @@ public class ConstrainedDeviceResource {
 	public String getOps() {
 		return ops;
 	}
+	
+	public abstract void update(String update_message);
 	
 	public void refresh() {
 		Calendar date = Calendar.getInstance();

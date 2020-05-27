@@ -1,6 +1,7 @@
 package iot.client;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,6 +55,13 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 		}
 		
 		
+		private ConstrainedDevice createDevice(String ip) {
+			ConstrainedDevice dev = new ConstrainedDevice(ip);
+			devices_registry.add(dev);
+			return dev;
+		}
+		
+		
 		/* Method to handle POST requests (registrations) */
 		public void handlePOST(CoapExchange exchange) {
 			
@@ -85,12 +93,10 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 				System.out.println("Invalid registration request: " + requestJSON.toString());
 			}
 			
-			// 
+			// Get the device, or create if doesn't exist
 			ConstrainedDevice dev = findDevice(src_addr.getHostAddress());
 			if (dev == null) {
-				// Device not already known, create it
-				dev = new ConstrainedDevice(src_addr.getHostAddress());
-				devices_registry.add(dev);
+				dev = createDevice(src_addr.getHostAddress());
 			}
 			// Register the resource (or refresh it it already existed)
 			Boolean existed = dev.registerResource(
@@ -119,6 +125,23 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 	/* Constructor */
 	ResourceDirectory() {
 		rdr = new RDResource("rd");
+	}
+	
+	
+	public ConstrainedDeviceResource findResourceByIpPath(String ipv6, String path) {
+		ConstrainedDevice dev = rdr.findDevice(ipv6);
+		if (dev == null)
+			return null;
+		return dev.findResourceByPath(path);
+	}
+	
+	
+	public List<ConstrainedDeviceResource> findResourcesByType(String type) {
+		List<ConstrainedDeviceResource> ress = new ArrayList<>();
+		for (ConstrainedDevice dev : rdr.devices_registry) {
+			ress.addAll(dev.findResourcesByType(type));
+		}
+		return ress;
 	}
 	
 	

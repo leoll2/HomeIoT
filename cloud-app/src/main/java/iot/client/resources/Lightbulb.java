@@ -10,8 +10,8 @@ public class Lightbulb extends ConstrainedDeviceResource {
         return rt.equals("bulb");
     }
 	
-	public Lightbulb(String path, String title, String rt, String ops) {
-		super(path, title, rt, ops);
+	public Lightbulb(String path, String title, String rt, String ops, String ip) {
+		super(path, title, rt, ops, ip);
 		on = false;
 	}
 
@@ -44,4 +44,16 @@ public class Lightbulb extends ConstrainedDeviceResource {
 		return super.toString() +
 			   "  status: " + (this.on ? "ON" : "OFF") + "\n";
 	}
+
+	@Override
+	public void update(String observe_message) {
+		if (observe_message.equals("on")) {
+			switchOn();
+		} else if (observe_message.equals("off")) {
+			switchOff();
+		} else {
+			System.err.println("Observe notification for bulb contains unrecognizable content: " + observe_message);
+		}
+	}
 }
+

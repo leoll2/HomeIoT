@@ -20,6 +20,26 @@ static const char *get_responses[2] = { // responses for GET requests
 };
 
 
+// Forward declarations
+static void res_get_handler(coap_message_t *request, coap_message_t *response,
+                            uint8_t *buffer, uint16_t preferred_size, 
+                            int32_t *offset);
+static void res_post_handler(coap_message_t *request, coap_message_t *response,
+                             uint8_t *buffer, uint16_t preferred_size,
+                             int32_t *offset);
+static void res_event_handler(void);
+
+
+/* Lightbulb, can be turned on and off */
+EVENT_RESOURCE(res_lightbulb,
+               "{title:\"Lightbulb\", rt:\"bulb\", ops:\"GET|POST|PUT\"}",
+               res_get_handler,
+               res_post_handler,
+               res_post_handler,
+               NULL, 
+               res_event_handler);
+
+
 /* Method to handle GET requests */
 static void res_get_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size, 
@@ -72,14 +92,15 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
 
     if (!success) {
         coap_set_status_code(response, BAD_REQUEST_4_00);
+    } else {
+        // notify about the change
+        res_lightbulb.trigger();
     }
 }
 
 
-/* Lightbulb, can be turned on and off */
-RESOURCE(res_lightbulb,
-         "{title:\"Lightbulb\", rt:\"bulb\", ops:\"GET|POST|PUT\"}",
-         res_get_handler,
-         res_post_handler,
-         res_post_handler,
-         NULL);
+static void res_event_handler(void)
+{
+    coap_notify_observers(&res_lightbulb);
+}
+

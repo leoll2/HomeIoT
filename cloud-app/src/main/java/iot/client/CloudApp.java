@@ -1,13 +1,12 @@
 package iot.client;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 
 public class CloudApp {
 	
-	private CloudAppCoapClient app_coap_client;
 	private ResourceDirectory res_dir;
-	private Thread app_coap_client_t;
 	private Thread res_dir_t;
 	private CommandParser comm_parser;
 	
@@ -21,10 +20,6 @@ public class CloudApp {
 		res_dir_t = new Thread(res_dir);
 		res_dir_t.start();
 		
-		app_coap_client = new CloudAppCoapClient(res_dir);
-		app_coap_client_t = new Thread(app_coap_client);
-		app_coap_client_t.start();
-		
 		comm_parser = new CommandParser();
 	}
 	
@@ -34,6 +29,26 @@ public class CloudApp {
 		CloudApp app = new CloudApp();
 		Scanner cmd = new Scanner(System.in);
 		
+	    // Wait a bit for initialization
+	    try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		// Clean the console
+		System.out.print("\033[H\033[2J");  
+	    System.out.flush();
+	    
+	    // Show ASCII art intro message
+	    ASCIIArtGenerator art_gen = new ASCIIArtGenerator();
+	    try {
+			art_gen.printTextArt("HomeIoT", ASCIIArtGenerator.ART_SIZE_SMALL);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// Fetch, decode and execute commands in loop
 		while (true) {
 			// Parse a command
 			System.out.print("> ");	  
@@ -43,7 +58,7 @@ public class CloudApp {
 	        // If the syntax was valid and we got a Command
             if (command != null) {
             	// Try to execute it
-                String result = command.execute(app.app_coap_client, app.res_dir);
+                String result = command.execute(app.res_dir);
 
                 // Display response
                 if (result == null)

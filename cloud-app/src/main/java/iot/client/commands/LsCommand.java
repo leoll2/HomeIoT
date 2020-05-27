@@ -1,6 +1,6 @@
 package iot.client.commands;
 
-import iot.client.CloudAppCoapClient;
+import iot.client.ResourceCoapClient;
 import iot.client.Command;
 import iot.client.RegexBox;
 import iot.client.ResourceDirectory;
@@ -31,8 +31,7 @@ public class LsCommand extends Command {
     }
     
     @Override
-    protected final String execute(CloudAppCoapClient app_coap_client, 
-    							   ResourceDirectory res_dir) {
+    protected final String execute(ResourceDirectory res_dir) {
     	return res_dir.toString();
     }
 }

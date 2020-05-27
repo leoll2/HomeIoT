@@ -1,5 +1,6 @@
 package iot.client;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class ConstrainedDevice {
 			}
 		}
 		if (! exist) {
-			resources.add(ConstrainedDeviceResource.getResource(path, desc, rt, ops));
+			resources.add(ConstrainedDeviceResource.getResource(path, desc, rt, ops, this.ipv6));
 		}
 		return exist;
 	}
@@ -39,6 +40,27 @@ public class ConstrainedDevice {
 	public void cleanExpiredServices() {
 		// TODO fare locking dell'array delle risorse
 		resources.removeIf(r -> r.isExpired());
+	}
+	
+	
+	public ConstrainedDeviceResource findResourceByPath(String path) {
+		for (ConstrainedDeviceResource res : resources) {
+			if (res.getPath().equals(path)) {
+				return res;
+			}
+		}
+		return null;
+	}
+	
+	
+	public List<ConstrainedDeviceResource> findResourcesByType(String type) {
+		List<ConstrainedDeviceResource> ress = new ArrayList<>();
+		for (ConstrainedDeviceResource res: resources) {
+			if (res.getRt().equals(type)) {
+				ress.add(res);
+			}
+		}
+		return ress;
 	}
 	
 	

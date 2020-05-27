@@ -1,5 +1,8 @@
 package iot.client;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
@@ -12,7 +15,7 @@ import org.eclipse.californium.core.coap.Request;
 
 //String url="coap://[fd00::202:2:2:2]:5683/led?color=r";
 
-public class CloudAppCoapClient extends CoapClient implements Runnable {
+public class ResourceCoapClient extends CoapClient implements Runnable {
 
 	/*
 	CoapResponse response;		
@@ -58,17 +61,11 @@ public class CloudAppCoapClient extends CoapClient implements Runnable {
 	}
 	obs_rel.proactiveCancel(); // stop observing
 	*/
+	private String res_uri;				// full URI to locate the resource univocally
+	ConstrainedDeviceResource cdr;		// reference to the associate ConstrainedDeviceResource
 	
-	private ResourceDirectory res_dir;
-
-	// Constructor
-	public CloudAppCoapClient(ResourceDirectory res_dir) {
-		this.res_dir = res_dir;
-	}
 	
-	@Override
-	public void run() {		// TODO change
-		
+	private void idle() {
 		while(true) {
 			try {
 				Thread.sleep(10*1000);
@@ -76,6 +73,37 @@ public class CloudAppCoapClient extends CoapClient implements Runnable {
 				// nothing
 			}
 		}
+	}
+
+
+	// Constructor
+	public ResourceCoapClient(String ip, String path, ConstrainedDeviceResource cdr) {
+		this.res_uri = String.format("coap://[%s]:5683/%s", ip, path);
+		this.cdr = cdr;
+	}
+	
+	
+	@Override
+	public void run() {		// TODO change
+		
+		// OBSERVING
+		CoapClient obs_client = new CoapClient(this.res_uri);
+		CoapObserveRelation obs_rel = obs_client.observe(
+				new CoapHandler() {
+					public void onLoad(CoapResponse resp) {
+						String obs_resp_text = resp.getResponseText();
+						System.out.println("Got observe notification: " + obs_resp_text);
+						cdr.update(obs_resp_text);
+					}
+					public void onError() {
+						System.err.println("Failed");
+					}
+				}
+		);
+		
+		idle();
+		
+		obs_rel.proactiveCancel(); // stop observing
 	}
 
 }

@@ -1,10 +1,11 @@
 package iot.client.commands;
 
-import iot.client.CloudAppCoapClient;
 import iot.client.Command;
+import iot.client.ConstrainedDeviceResource;
 import iot.client.RegexBox;
 import iot.client.ResourceDirectory;
 
+import java.util.List;
 import java.util.regex.Matcher;
 
 public class ReadCommand extends Command {
@@ -55,15 +56,23 @@ public class ReadCommand extends Command {
     }
     
     @Override
-    protected final String execute(CloudAppCoapClient app_coap_client,
-    							   ResourceDirectory res_dir) {
+    protected final String execute(ResourceDirectory res_dir) {
     	switch (type) {
 		case TYPE1:
-			return String.format("Querying coap://[%s]:5683/%s...", this.ip, this.path);
-			// TODO
+			System.out.println(String.format("Querying coap://[%s]:5683/%s ...", this.ip, this.path));
+			ConstrainedDeviceResource res = res_dir.findResourceByIpPath(this.ip, this.path);
+			if (res == null)
+				return "Resource not available";
+			else
+				return res.toString();
 		case TYPE2:
-			return String.format("Querying resources of type %s...", this.rt);
-			// TODO
+			System.out.println(String.format("Querying resources of type %s ...", this.rt));
+			String s = "";
+			List<ConstrainedDeviceResource> ress = res_dir.findResourcesByType(this.rt);
+			for (ConstrainedDeviceResource r : ress) {
+				s = s.concat(r.toString()); 
+			}
+			return (s.length() > 0 ? s : String.format("No resource available of type %s", this.rt));
 		default:
 			return "Generic read command!";
 		}
