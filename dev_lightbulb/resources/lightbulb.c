@@ -78,7 +78,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
 
 /* Lightbulb, can be turned on and off */
 RESOURCE(res_lightbulb,
-         "title=\"Lightbulb, GET/POST/PUT mode=on|off\";rt=\"Actuator\"",
+         "{title:\"Lightbulb\", rt:\"bulb\", ops:\"GET|POST|PUT\"}",
          res_get_handler,
          res_post_handler,
          res_post_handler,

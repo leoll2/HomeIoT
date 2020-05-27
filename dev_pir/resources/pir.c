@@ -17,7 +17,7 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
                             int32_t *offset);
 
 EVENT_RESOURCE(res_pir,
-               "title=\"PIR sensor\";rt=\"Trigger\"",
+               "{title:\"PIR sensor\", rt:\"pir\", ops:\"GET|POST|PUT\"}",
                res_get_handler,
                NULL,
                NULL,

@@ -6,6 +6,7 @@ CONTIKI = ../../..
 PLATFORMS_EXCLUDE = nrf52dk z1
 CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 MODULES_REL += ./resources
+MODULES_REL += ./registration
 
 MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/coap
 
