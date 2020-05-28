@@ -9,7 +9,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "Bulb"
+#define LOG_MODULE "THERMO"
 #define LOG_LEVEL LOG_LEVEL_APP
 
 #define SERVER_EP   "coap://[2001:db8:0:f101::1]:5683"
@@ -18,6 +18,7 @@
 const char *service_url = "/rd";
 
 char res_desc[64];
+
 
 PROCESS(registration_client, "Registration client");
 
@@ -61,9 +62,9 @@ PROCESS_THREAD(registration_client, ev, data)
     static coap_endpoint_t server_ep;
     static coap_message_t request[1];
 
-    PROCESS_BEGIN();
+    sprintf(res_desc, "{p:\"thermo\",d:\"Thermometer\",t:\"thermo\",id:\"%d\"}", linkaddr_node_addr.u8[1]);
 
-    sprintf(res_desc, "{p:\"bulb\",d:\"Lightbulb\",t:\"bulb\",id:\"%d\"}", linkaddr_node_addr.u8[1]);
+    PROCESS_BEGIN();
 
     coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 
@@ -74,7 +75,7 @@ PROCESS_THREAD(registration_client, ev, data)
 
         if (has_local_ip()) {
             printf("Registering resources\n");
-
+            
             coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
             coap_set_header_uri_path(request, service_url);
 

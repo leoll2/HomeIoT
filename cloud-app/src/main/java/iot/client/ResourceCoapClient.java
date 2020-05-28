@@ -1,24 +1,18 @@
 package iot.client;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.OptionSet;
-import org.eclipse.californium.core.coap.Request;
 
-
-//String url="coap://[fd00::202:2:2:2]:5683/led?color=r";
 
 public class ResourceCoapClient extends CoapClient implements Runnable {
 
 	/*
-	CoapResponse response;		
+	CoapResponse response;
 	String url="coap://[fd00::203:3:3:3]:5683/lightbulb";
     URI uri= null;
     try {
@@ -36,36 +30,15 @@ public class ResourceCoapClient extends CoapClient implements Runnable {
 	System.out.print("Get response code: " + response.getCode()+"\n");
 	System.out.print(response.getResponseText()+"\n");
 
-	// POST
-	response = client.post("mode=on", MediaTypeRegistry.TEXT_PLAIN);
-	System.out.print("Post response code: " + response.getCode()+"\n");
-	System.out.print(response.getResponseText()+"\n");
-	
-	// OBSERVING
-	CoapClient obs_client = new CoapClient("coap://[fd00::205:5:5:5]:5683/pir");
-	CoapObserveRelation obs_rel = obs_client.observe(
-			new CoapHandler() {
-				public void onLoad(CoapResponse resp) {
-					String content = "I was notified, got response: " + resp.getResponseText();
-					System.out.println(content);
-				}
-				public void onError() {
-					System.err.println("Failed");
-				}
-			}
-	);
-	try {
-		Thread.sleep(30*1000);
-	} catch (InterruptedException e) {
-		// nothing
-	}
-	obs_rel.proactiveCancel(); // stop observing
 	*/
-	private String res_uri;				// full URI to locate the resource univocally
-	ConstrainedDeviceResource cdr;		// reference to the associate ConstrainedDeviceResource
+	private String res_uri;					// full URI to locate the resource univocally
+	private ConstrainedDeviceResource cdr;	// reference to the associate ConstrainedDeviceResource
+	private CoapClient post_client;			// client for post requests		// TODO si può unificare?
+	private CoapClient obs_client;			// client for observing
 	
 	
 	private void idle() {
+		
 		while(true) {
 			try {
 				Thread.sleep(10*1000);
@@ -74,25 +47,34 @@ public class ResourceCoapClient extends CoapClient implements Runnable {
 			}
 		}
 	}
+	
+	
+	public Boolean doPost(String payload) {
+		
+		CoapResponse response = post_client.post(payload, MediaTypeRegistry.TEXT_PLAIN);
+		return ResponseCode.isSuccess(response.getCode());
+	}
 
 
 	// Constructor
 	public ResourceCoapClient(String ip, String path, ConstrainedDeviceResource cdr) {
+		
 		this.res_uri = String.format("coap://[%s]:5683/%s", ip, path);
 		this.cdr = cdr;
+		
+		post_client = new CoapClient(this.res_uri);
+		obs_client = new CoapClient(this.res_uri);
 	}
 	
 	
 	@Override
-	public void run() {		// TODO change
+	public void run() {
 		
-		// OBSERVING
-		CoapClient obs_client = new CoapClient(this.res_uri);
-		CoapObserveRelation obs_rel = obs_client.observe(
+		// CoAP observing
+		CoapObserveRelation obs_rel = this.obs_client.observe(
 				new CoapHandler() {
 					public void onLoad(CoapResponse resp) {
 						String obs_resp_text = resp.getResponseText();
-						System.out.println("Got observe notification: " + obs_resp_text);
 						cdr.update(obs_resp_text);
 					}
 					public void onError() {
@@ -105,5 +87,4 @@ public class ResourceCoapClient extends CoapClient implements Runnable {
 		
 		obs_rel.proactiveCancel(); // stop observing
 	}
-
 }

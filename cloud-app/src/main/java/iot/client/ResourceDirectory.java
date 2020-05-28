@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 public class ResourceDirectory extends CoapServer implements Runnable {
 	
+	private static ResourceDirectory rd;	
 	private RDResource rdr;
 
 	private class RDResource extends CoapResource {
@@ -23,9 +24,9 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 		
 		// Constructor
 		RDResource(String name) {
+			
 			super(name);
 			devices_registry = new LinkedList<ConstrainedDevice>();
-			System.out.println("Resource Directory created");
 		}
 		
 		
@@ -64,13 +65,12 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 		
 		/* Method to handle POST requests (registrations) */
 		public void handlePOST(CoapExchange exchange) {
-			
+		
 			Response response;
 			JSONObject requestJSON;
 			
 			// Retrieve sender and payload
 			InetAddress src_addr = exchange.getSourceAddress();
-			System.out.println("Received POST request from: " + src_addr.getHostAddress());
 			byte[] requestBody = exchange.getRequestPayload();
 			
 			// Validate
@@ -83,14 +83,14 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 			try {
 				requestJSON = new JSONObject(new String(requestBody));
 			} catch (JSONException je) {
-				System.out.println("Invalid registration request: " + new String(requestBody));
+				System.err.println("Invalid registration request: " + new String(requestBody));
 				response = new Response(ResponseCode.BAD_REQUEST);			
 				exchange.respond(response);
 				return;
 			}
 			if (! (requestJSON.has("p") && requestJSON.has("d") 
-					&& requestJSON.has("t") && requestJSON.has("o"))) {
-				System.out.println("Invalid registration request: " + requestJSON.toString());
+					&& requestJSON.has("t") && requestJSON.has("id"))) {
+				System.err.println("Invalid registration request: " + requestJSON.toString());
 			}
 			
 			// Get the device, or create if doesn't exist
@@ -103,7 +103,7 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 					requestJSON.getString("p"),
 					requestJSON.getString("d"),
 					requestJSON.getString("t"),
-					requestJSON.getString("o"));
+					requestJSON.getString("id"));
 			if (existed)
 				response = new Response(ResponseCode.CHANGED);  // resource refreshed
 			else
@@ -112,10 +112,14 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 			exchange.respond(response);
 	 	}
 		
+		
 		public String toString() {
-			String s = "rd:\n";
+			String s = 
+					"-----------------------------------------------------------------------------\n" +
+					String.format("%-25s | %-16s | %-20s | %-8s \n", "IPv6", "Path", "Description", "NodeID") +
+					"-----------------------------------------------------------------------------\n";
 			for (ConstrainedDevice d : devices_registry) {
-				s = s.concat(d.toString() + '\n');
+				s = s.concat(d.toString());
 			}
 			return s;
 		}
@@ -123,12 +127,23 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 
 	
 	/* Constructor */
-	ResourceDirectory() {
+	private ResourceDirectory() {
+		
 		rdr = new RDResource("rd");
 	}
 	
 	
+	public static ResourceDirectory getResourceDirectory() {
+		
+		if (rd == null) {
+			rd = new ResourceDirectory();
+		}
+		return rd;
+	}
+	
+	
 	public ConstrainedDeviceResource findResourceByIpPath(String ipv6, String path) {
+		
 		ConstrainedDevice dev = rdr.findDevice(ipv6);
 		if (dev == null)
 			return null;
@@ -137,6 +152,7 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 	
 	
 	public List<ConstrainedDeviceResource> findResourcesByType(String type) {
+		
 		List<ConstrainedDeviceResource> ress = new ArrayList<>();
 		for (ConstrainedDevice dev : rdr.devices_registry) {
 			ress.addAll(dev.findResourcesByType(type));
@@ -146,6 +162,7 @@ public class ResourceDirectory extends CoapServer implements Runnable {
 	
 	
 	public String toString() {
+		
 		return rdr.toString();
 	}
 	

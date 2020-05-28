@@ -80,6 +80,15 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
             leds_off(LEDS_NUM_TO_MASK(led));
             bulb_status = BULB_OFF;
             success = 1;
+        } else if (strncmp(mode, "toggle", len) == 0) {
+            if (bulb_status == BULB_OFF) {
+                leds_on(LEDS_NUM_TO_MASK(led));
+                bulb_status = BULB_ON;
+            } else {
+                leds_off(LEDS_NUM_TO_MASK(led));
+                bulb_status = BULB_OFF;
+            }
+            success = 1;
         }
     } else {
         LOG_DBG("Received invalid POST/PUT request:");

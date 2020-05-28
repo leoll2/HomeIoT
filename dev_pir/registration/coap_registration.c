@@ -17,7 +17,7 @@
 
 const char *service_url = "/rd";
 
-const char res_desc[] = "{p:\"pir\",d:\"PIR sensor\",t:\"pir\",o:\"GET|POST|PUT\"}";
+char res_desc[64];
 
 
 PROCESS(registration_client, "Registration client");
@@ -61,6 +61,8 @@ PROCESS_THREAD(registration_client, ev, data)
 {
     static coap_endpoint_t server_ep;
     static coap_message_t request[1];
+
+    sprintf(res_desc, "{p:\"pir\",d:\"PIR sensor\",t:\"pir\",id:\"%d\"}", linkaddr_node_addr.u8[1]);
 
     PROCESS_BEGIN();
 

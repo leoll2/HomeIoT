@@ -1,30 +1,39 @@
 package iot.client;
 
-import java.io.IOException;
 import java.util.Scanner;
+
+import org.eclipse.californium.core.CaliforniumLogger;
+
+import iot.client.smartfeatures.SmartLights;
 
 
 public class CloudApp {
 	
 	private ResourceDirectory res_dir;
 	private Thread res_dir_t;
+	private SmartLights smart_lights;
+	private Thread smart_lights_t;
 	private CommandParser comm_parser;
 	
 	
 	// Constructor
 	public CloudApp() {
 		
-		System.out.println("HomeIoT");
-		
-		res_dir = new ResourceDirectory();
+		res_dir = ResourceDirectory.getResourceDirectory();
 		res_dir_t = new Thread(res_dir);
 		res_dir_t.start();
+		
+		smart_lights = SmartLights.getSmartLights(res_dir);
+		smart_lights_t = new Thread(smart_lights);
+		smart_lights_t.start();
 		
 		comm_parser = new CommandParser();
 	}
 	
 	
 	public static void main(String[] args) {
+		
+		CaliforniumLogger.disableLogging();
 		
 		CloudApp app = new CloudApp();
 		Scanner cmd = new Scanner(System.in);

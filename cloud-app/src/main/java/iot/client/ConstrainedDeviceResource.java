@@ -11,16 +11,17 @@ import iot.client.commands.LsCommand;
 import iot.client.commands.ReadCommand;
 import iot.client.resources.Lightbulb;
 import iot.client.resources.Pir;
+import iot.client.resources.Thermometer;
 
 public abstract class ConstrainedDeviceResource {
 
 	private String path; 	// location of the resource (unique per device)
-	private String title;	// human-readable description
+	private String desc;	// human-readable description
 	private String rt; 		// resource type, semantic type of the resource
-	private String ops; 	// description of allowed operations
+	private String nodeid;	// node ID
 	private String ip; 		// ip of the device exposing this resource
 	private Date exp_time;	// expiration time
-	private ResourceCoapClient coap_client; // CoAP client to handle operations on the resource
+	protected ResourceCoapClient coap_client; // CoAP client to handle operations on the resource
 	private Thread coap_client_thread; 		// thread for the CoAP client
 	
 	private static ArrayList<Class<? extends ConstrainedDeviceResource>> res_types;
@@ -32,13 +33,14 @@ public abstract class ConstrainedDeviceResource {
     	res_types = new ArrayList<>();
     	res_types.add(Lightbulb.class);
     	res_types.add(Pir.class);
+    	res_types.add(Thermometer.class);
     }
 	
-	protected ConstrainedDeviceResource(String path, String title, String rt, String ops, String ip) {
+	protected ConstrainedDeviceResource(String path, String desc, String rt, String id, String ip) {
 		this.path = path;
-		this.title = title;
+		this.desc = desc;
 		this.rt = rt;
-		this.ops = ops;
+		this.nodeid = id;
 		this.ip = ip;
 		this.refresh();
 		this.coap_client = new ResourceCoapClient(ip, path, this);
@@ -46,7 +48,7 @@ public abstract class ConstrainedDeviceResource {
 		this.coap_client_thread.start();
 	}
 	
-	public static ConstrainedDeviceResource getResource(String path, String title, String rt, String ops, String ip) {
+	public static ConstrainedDeviceResource getResource(String path, String desc, String rt, String id, String ip) {
 		
 		ConstrainedDeviceResource res = null;
 		
@@ -61,7 +63,7 @@ public abstract class ConstrainedDeviceResource {
                 // If it corresponds, get the constructor and create a new instance
                 if (signatureMatches) {
                     Constructor ctr = r.getConstructor(String.class, String.class, String.class, String.class, String.class);
-                    res = (ConstrainedDeviceResource)ctr.newInstance(path, title, rt, ops, ip);
+                    res = (ConstrainedDeviceResource)ctr.newInstance(path, desc, rt, id, ip);
                     break;
                 }
             } catch(NoSuchMethodException e) {
@@ -78,23 +80,37 @@ public abstract class ConstrainedDeviceResource {
 		return res;
 	}
 	
-	public String getPath() {
+	public final String getIp() {
+		return ip;
+	}
+	
+	public final String getPath() {
 		return path;
 	}
 	
-	public String getTitle() {
-		return title;
+	public final String getDesc() {
+		return desc;
 	}
 
-	public String getRt() {
+	public final String getRt() {
 		return rt;
 	}
 
-	public String getOps() {
-		return ops;
+	public final String getNodeId() {
+		return nodeid;
+	}
+	
+	public final String getFullPath() {
+		return String.format("[%s]:5683/%s", ip, path);
 	}
 	
 	public abstract void update(String update_message);
+	
+	public abstract String doRead();
+	
+	public abstract String doSet();
+	
+	public abstract String doSet(String val);
 	
 	public void refresh() {
 		Calendar date = Calendar.getInstance();
@@ -106,10 +122,11 @@ public abstract class ConstrainedDeviceResource {
 		return exp_time.before(new Date());
 	}
 
-	public String toString() {
-		return "  path: " + this.path + "\n" +
-			   "  title: " + this.title + "\n" + 
-			   "  rt: " + this.rt + "\n" + 
-			   "  ops: " + this.ops + "\n";
+	public final String toString() {
+		return String.format("%-25s | %-16s | %-20s | %-8s \n",
+				"[" + this.ip + "]",
+				this.path,
+				this.desc,
+				this.nodeid);
 	}
 }

@@ -40,11 +40,7 @@ public class Lightbulb extends ConstrainedDeviceResource {
 		on = val;
 	}
 	
-	public String toString() {
-		return super.toString() +
-			   "  status: " + (this.on ? "ON" : "OFF") + "\n";
-	}
-
+			   
 	@Override
 	public void update(String observe_message) {
 		if (observe_message.equals("on")) {
@@ -54,6 +50,32 @@ public class Lightbulb extends ConstrainedDeviceResource {
 		} else {
 			System.err.println("Observe notification for bulb contains unrecognizable content: " + observe_message);
 		}
+	}
+
+	@Override
+	public String doRead() {
+		return String.format("Status: %s\n", (this.on ? "ON" : "OFF"));
+	}
+
+	@Override
+	public String doSet() {
+		
+		if (this.coap_client.doPost("mode=toggle"))
+			return "Done";
+		else
+			return "Failed";
+	}
+
+	@Override
+	public String doSet(String val) {
+		
+		if (! (val.equals("on") || val.equals("off")))
+			return ("Invalid value: " + val);
+		
+		if (this.coap_client.doPost("mode=" + val))
+			return "Done";
+		else
+			return "Failed";
 	}
 }
 

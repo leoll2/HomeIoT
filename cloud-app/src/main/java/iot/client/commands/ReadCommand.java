@@ -48,9 +48,9 @@ public class ReadCommand extends Command {
     	} else if (RegexBox.READ_T2_PATTERN.matcher(this.commandText).matches()) {
     		// "read" + <type>
     		type = ReadType.TYPE2;
-    		final Matcher typeMatcher = RegexBox.COAP_RESOURCE_TYPE_PATTERN.matcher(this.commandText.substring(4));
-    		typeMatcher.find();
-    		this.rt = typeMatcher.group(1);
+    		final Matcher cmdMatcher = RegexBox.READ_T2_PATTERN.matcher(this.commandText);
+    		cmdMatcher.find();
+    		this.rt = cmdMatcher.group(1);
     	}
         return true;
     }
@@ -59,22 +59,24 @@ public class ReadCommand extends Command {
     protected final String execute(ResourceDirectory res_dir) {
     	switch (type) {
 		case TYPE1:
+			// "read" + <ip> + <path>
 			System.out.println(String.format("Querying coap://[%s]:5683/%s ...", this.ip, this.path));
 			ConstrainedDeviceResource res = res_dir.findResourceByIpPath(this.ip, this.path);
 			if (res == null)
 				return "Resource not available";
 			else
-				return res.toString();
+				return res.doRead();
 		case TYPE2:
+			// "read" + <type>
 			System.out.println(String.format("Querying resources of type %s ...", this.rt));
 			String s = "";
 			List<ConstrainedDeviceResource> ress = res_dir.findResourcesByType(this.rt);
 			for (ConstrainedDeviceResource r : ress) {
-				s = s.concat(r.toString()); 
+				s = s.concat(r.getFullPath() + " -> " + r.doRead()); 
 			}
 			return (s.length() > 0 ? s : String.format("No resource available of type %s", this.rt));
 		default:
-			return "Generic read command!";
+			return "read: invalid format";
 		}
     }
 }

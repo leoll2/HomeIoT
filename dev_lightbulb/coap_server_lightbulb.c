@@ -4,6 +4,7 @@
 #include "contiki.h"
 #include "coap-engine.h"
 #include "sys/log.h"
+#include "net/linkaddr.h"
 
 #define LOG_MODULE "Bulb"
 #define LOG_LEVEL LOG_LEVEL_APP
@@ -21,7 +22,7 @@ PROCESS_THREAD(coap_server_bulb, ev, data)
 {
 	PROCESS_BEGIN();
 
-	LOG_INFO("Initializing lightbulb\n");
+	LOG_INFO("Initializing lightbulb [id=%d]\n", linkaddr_node_addr.u8[1]);
 
 	coap_activate_resource(&res_lightbulb, "bulb");
 

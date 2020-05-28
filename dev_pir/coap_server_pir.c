@@ -3,6 +3,7 @@
 #include <string.h>
 #include "contiki.h"
 #include "coap-engine.h"
+#include "net/linkaddr.h"
 #include "sys/etimer.h"
 #include "os/dev/button-hal.h"
 #include "sys/log.h"
@@ -26,7 +27,7 @@ PROCESS_THREAD(coap_server_pir, ev, data)
 
     PROCESS_BEGIN();
 
-    LOG_INFO("Initializing PIR\n");
+    LOG_INFO("Initializing PIR [id=%d]\n", linkaddr_node_addr.u8[1]);
     coap_activate_resource(&res_pir, "pir");
 
     process_start(&registration_client, NULL);

@@ -12,7 +12,6 @@ public class ConstrainedDevice {
 	ConstrainedDevice(String ipv6) {
 		this.ipv6 = ipv6;
 		this.resources = new LinkedList<ConstrainedDeviceResource>();
-		System.out.println("Created ConstrainedDevice with ipv6 " + ipv6);
 	}
 	
 	
@@ -21,7 +20,7 @@ public class ConstrainedDevice {
 	}
 	
 	
-	public Boolean registerResource(String path, String desc, String rt, String ops) {
+	public Boolean registerResource(String path, String desc, String rt, String id) {
 		
 		Boolean exist = false;
 		for (ConstrainedDeviceResource r : resources) {
@@ -31,7 +30,11 @@ public class ConstrainedDevice {
 			}
 		}
 		if (! exist) {
-			resources.add(ConstrainedDeviceResource.getResource(path, desc, rt, ops, this.ipv6));
+			ConstrainedDeviceResource res = ConstrainedDeviceResource.getResource(path, desc, rt, id, this.ipv6);
+			if (res != null)
+				resources.add(ConstrainedDeviceResource.getResource(path, desc, rt, id, this.ipv6));
+			else
+				System.err.println("Failed to register resource of type :" + rt);
 		}
 		return exist;
 	}
@@ -65,7 +68,7 @@ public class ConstrainedDevice {
 	
 	
 	public String toString() {
-		String s = "[" + ipv6 + "]:\n";
+		String s = "";
 		for (ConstrainedDeviceResource r : resources) {
 			s = s.concat(r.toString());
 		}

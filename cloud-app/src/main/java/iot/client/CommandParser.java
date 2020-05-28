@@ -5,8 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import iot.client.commands.ClearCommand;
+import iot.client.commands.HelpCommand;
 import iot.client.commands.LsCommand;
 import iot.client.commands.ReadCommand;
+import iot.client.commands.SetCommand;
 
 /**
  * A CommandParser interpretes the text inside the messages coming from the user,
@@ -18,8 +21,11 @@ public class CommandParser {
     
     private void loadCommands() {
         commands = new ArrayList<>();
+        commands.add(HelpCommand.class);
         commands.add(LsCommand.class);
+        commands.add(ClearCommand.class);
         commands.add(ReadCommand.class);
+        commands.add(SetCommand.class);
     }
     
     /**
