@@ -17,33 +17,32 @@ public class SmartLights implements Runnable {
 	private static Lock l;
 	private static Condition motionDetect;
 	private static ResourceDirectory res_dir;
-	
-	
+	private static Boolean enabled = true;
+
 	private SmartLights() {
-		
+
 		l = new ReentrantLock();
 		motionDetect = l.newCondition();
 	}
-	
-	
-	public static SmartLights getSmartLights(ResourceDirectory res_dir) {
-		
+
+	public static SmartLights getSmartLightsInstance(ResourceDirectory res_dir) {
+
 		SmartLights.res_dir = res_dir;
 		if (smartlights == null) {
 			smartlights = new SmartLights();
 		}
 		return smartlights;
 	}
-	
-	
+
 	public static void signalMotion() {
-		
-		l.lock();
-		motionDetect.signal();
-		l.unlock();
+
+		if (enabled) {
+			l.lock();
+			motionDetect.signal();
+			l.unlock();
+		}
 	}
-	
-	
+
 	private Boolean matchingIds(int id1, int id2) {
 		// Policy: two IDs match if they are equal modulo 3
 		if (id1 % 3 == id2 % 3)
@@ -51,12 +50,22 @@ public class SmartLights implements Runnable {
 		else
 			return false;
 	}
-	
-	
+
+	public static void enable() {
+		enabled = true;
+	}
+
+	public static void disable() {
+		enabled = false;
+	}
+
+	public static Boolean isEnabled() {
+		return enabled;
+	}
+
 	@Override
 	public void run() {
-		
-		System.out.println("SmartLights enabled");
+
 		while (true) {
 			l.lock();
 			try {
@@ -67,8 +76,9 @@ public class SmartLights implements Runnable {
 				List<ConstrainedDeviceResource> pirs = res_dir.findResourcesByType("pir");
 				List<ConstrainedDeviceResource> lights = res_dir.findResourcesByType("bulb");
 				for (ConstrainedDeviceResource pir : pirs) {
-					Date last_act = ((Pir)pir).getLastActivation();
-					// If that PIR was activated less than few seconds ago, turn on the corresponding lights
+					Date last_act = ((Pir) pir).getLastActivation();
+					// If that PIR was activated less than few seconds ago, turn on the
+					// corresponding lights
 					if (last_act.after(few_seconds_ago)) {
 						int pir_id = Integer.parseInt(pir.getNodeId());
 						System.out.println(String.format("PIR with id %d was activated shortly ago\n", pir_id));
@@ -88,5 +98,4 @@ public class SmartLights implements Runnable {
 			}
 		}
 	}
-
 }

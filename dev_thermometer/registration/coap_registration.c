@@ -31,7 +31,7 @@ void registration_resp_handler(coap_message_t *response)
     int len;
 
     if (response == NULL) {
-        puts("Request timed out");
+        puts("Registration timed out");
         return;
     }
 

@@ -1,4 +1,4 @@
-package iot.client;
+package iot.client.regex;
 
 import java.util.regex.Pattern;
 
@@ -13,7 +13,8 @@ public class RegexBox {
             IPV6_PATTERN,				// ipv6 pattern
             COAP_RESOURCE_PATH_PATTERN,	// CoAP resource pattern
             COAP_RESOURCE_TYPE_PATTERN, // CoAP resource type pattern
-            HELP_PATTERN,				// keyword "help"
+            HELP_T1_PATTERN,			// keyword "help"
+            HELP_T2_PATTERN, 			// keyword "help" + <cmd>
             LS_PATTERN,           		// keyword "ls"
             CLEAR_PATTERN,				// keyword "clear"
             READ_T1_PATTERN,			// keyword "read" + <ip> + <path>
@@ -21,7 +22,9 @@ public class RegexBox {
     		SET_T1_PATTERN,				// keyword "set" + <ip> + <path>
     		SET_T2_PATTERN,				// keyword "set" + <ip> + <path> + <value>
     		SET_T3_PATTERN,				// keyword "set" + <type>
-    		SET_T4_PATTERN;				// keyword "set" + <type> + <value>
+    		SET_T4_PATTERN,				// keyword "set" + <type> + <value>
+    		SMARTLIGHTS_PATTERN, 		// keyword "smartlights" + <mode>
+    		SMARTTEMP_PATTERN; 			// keyword "smarttemp" + <mode>
     
     // Initialize and compile the regular expressions
     static {
@@ -40,8 +43,10 @@ public class RegexBox {
         		"([-a-zA-Z0-9+&@#/%?=~_]+)",
         coapResourceTypePatternString =
         		"([-a-zA-Z0-9+&@#/%?=~_]+)",
-        helpPatternString = 
+        helpT1PatternString = 
         		"^\\s*help\\s*$",
+        helpT2PatternString =
+        		"^\\s*help\\s+([-a-zA-Z]+)\\s*$",
         lsPatternString = 
                 "^\\s*ls\\s*$",
         clearPatternString = 
@@ -59,7 +64,11 @@ public class RegexBox {
         		"^\\s*set" + "\\s+" + coapResourceTypePatternString + "\\s*" + "$",
         setT4PatternString =
         		"^\\s*set" + "\\s+" + coapResourceTypePatternString + "\\s+"
-        		+ alphanumsymbPatternString + "\\s*" + "$";
+        		+ alphanumsymbPatternString + "\\s*" + "$",
+        smartlightsPatternString = 
+        		"^\\s*smartlights\\s+(on|off|status)\\s*$",
+        smarttempPatternString =
+        		"^\\s*smarttemp\\s+(on|off|status)\\s*$";
     
 	    INTEGER_PATTERN = Pattern.compile(integerPatternString);
 	    ALPHANUMSYMB_PATTERN = Pattern.compile(alphanumsymbPatternString);
@@ -68,7 +77,8 @@ public class RegexBox {
 	    IPV6_PATTERN = Pattern.compile(ipv6PatternString);
 	    COAP_RESOURCE_PATH_PATTERN = Pattern.compile(coapResourcePathPatternString);
 	    COAP_RESOURCE_TYPE_PATTERN = Pattern.compile(coapResourceTypePatternString);
-	    HELP_PATTERN = Pattern.compile(helpPatternString);
+	    HELP_T1_PATTERN = Pattern.compile(helpT1PatternString);
+	    HELP_T2_PATTERN = Pattern.compile(helpT2PatternString);
 	    LS_PATTERN = Pattern.compile(lsPatternString);
 	    CLEAR_PATTERN = Pattern.compile(clearPatternString);
 	    READ_T1_PATTERN = Pattern.compile(readT1PatternString);
@@ -77,5 +87,7 @@ public class RegexBox {
 	    SET_T2_PATTERN = Pattern.compile(setT2PatternString);
 	    SET_T3_PATTERN = Pattern.compile(setT3PatternString);
 	    SET_T4_PATTERN = Pattern.compile(setT4PatternString);
+	    SMARTLIGHTS_PATTERN = Pattern.compile(smartlightsPatternString);
+	    SMARTTEMP_PATTERN = Pattern.compile(smarttempPatternString);
     }
 }

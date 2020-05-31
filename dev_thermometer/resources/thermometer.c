@@ -8,13 +8,12 @@
 #define LOG_MODULE "THERMO"
 #define LOG_LEVEL LOG_LEVEL_APP
 
-#define MIN_TEMP 120      // minumum simulated temperature
-#define MAX_TEMP 300      // maximum simulated temperature
-#define LOW_THRESH 180    // threshold to trigger 'too cold' condition
-#define HIGH_THRESH 240   // threshold to trigger 'too hot' condition
-#define FLUCTUATION 10    // how much the temperature can vary between consecutive readings
+#define MIN_TEMP            120      // minumum simulated temperature
+#define MAX_TEMP            300      // maximum simulated temperature
+#define NOTIF_TEMP_DELTA    10       // max variation before triggering a notification
+#define FLUCTUATION         5        // how much the temperature can vary between consecutive readings
 
-unsigned long previous_temp = 210;
+unsigned long last_notif_temp = 210;
 unsigned long current_temp = 210;   // [10*Celsius]
 static unsigned long act_counter = 0;
 
@@ -35,8 +34,6 @@ EVENT_RESOURCE(res_thermo,
 
 void update_temperature()
 {
-    previous_temp = current_temp;
-
     current_temp += (rand() % (2*FLUCTUATION+1)) - FLUCTUATION;
     // Clamp
     if (current_temp < MIN_TEMP)
@@ -44,28 +41,14 @@ void update_temperature()
     else if (current_temp > MAX_TEMP)
         current_temp = MAX_TEMP;
 
-    LOG_DBG("Measured temperature: %d\n", current_temp);
+    LOG_DBG("Measured temperature: %.1f\n", current_temp/10.0);
 }
 
-int temperature_zone_changed()
+int large_temp_change()
 {
-    // Getting cold...
-    if (current_temp < LOW_THRESH && previous_temp > LOW_THRESH) {
-        LOG_DBG("It's getting cold...\n");
-        return 1;
-    }
-    // Getting hot...
-    if (current_temp > HIGH_THRESH && previous_temp < HIGH_THRESH) {
-        LOG_DBG("It's getting hot...\n");
-        return 1;
-    }
-    // Back to normal (comfortable)
-    if (current_temp > LOW_THRESH && previous_temp < LOW_THRESH) {
-        LOG_DBG("Temperature is ok again\n");
-        return 1;
-    }
-    if (current_temp < HIGH_THRESH && previous_temp > HIGH_THRESH) {
-        LOG_DBG("Temperature is ok again\n");
+    if (((current_temp > last_notif_temp) && (current_temp - last_notif_temp > NOTIF_TEMP_DELTA)) ||
+        ((last_notif_temp > current_temp) && (last_notif_temp - current_temp > NOTIF_TEMP_DELTA))) {
+        
         return 1;
     }
     return 0;
@@ -74,7 +57,7 @@ int temperature_zone_changed()
 static void res_event_handler(void)
 {
     act_counter++;
-    LOG_DBG("Advertising temperature: %d\n", current_temp);
+    LOG_DBG("Advertising temperature: %.1f\n", current_temp/10.0);
     coap_notify_observers(&res_thermo);
 }
 

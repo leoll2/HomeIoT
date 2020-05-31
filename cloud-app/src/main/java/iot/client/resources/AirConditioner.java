@@ -2,16 +2,16 @@ package iot.client.resources;
 
 import iot.client.ConstrainedDeviceResource;
 
-public class Lightbulb extends ConstrainedDeviceResource {
+public class AirConditioner extends ConstrainedDeviceResource {
 
 	private Boolean on;
 
 	public static boolean matchesCommandSignature(String rt) {
-		return rt.equals("bulb");
+		return rt.equals("aircond");
 	}
 
-	public Lightbulb(String path, String title, String rt, String ops, String ip) {
-		super(path, title, rt, ops, ip);
+	public AirConditioner(String path, String title, String rt, String id, String ip) {
+		super(path, title, rt, id, ip);
 		on = false;
 	}
 
@@ -42,7 +42,7 @@ public class Lightbulb extends ConstrainedDeviceResource {
 		} else if (observe_message.equals("off")) {
 			switchOff();
 		} else {
-			System.err.println("Observe notification for bulb contains unrecognizable content: " + observe_message);
+			System.err.println("Observe notification for heater contains unrecognizable content: " + observe_message);
 		}
 	}
 

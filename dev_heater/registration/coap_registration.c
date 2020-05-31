@@ -9,7 +9,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "Bulb"
+#define LOG_MODULE "Heater"
 #define LOG_LEVEL LOG_LEVEL_APP
 
 #define SERVER_EP   "coap://[2001:db8:0:f101::1]:5683"
@@ -63,7 +63,7 @@ PROCESS_THREAD(registration_client, ev, data)
 
     PROCESS_BEGIN();
 
-    sprintf(res_desc, "{p:\"bulb\",d:\"Lightbulb\",t:\"bulb\",id:\"%d\"}", linkaddr_node_addr.u8[1]);
+    sprintf(res_desc, "{p:\"heater\",d:\"Heater\",t:\"heater\",id:\"%d\"}", linkaddr_node_addr.u8[1]);
 
     coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 

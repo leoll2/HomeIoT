@@ -7,13 +7,13 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "Bulb"
+#define LOG_MODULE "Heater"
 #define LOG_LEVEL LOG_LEVEL_APP
 
-#define BULB_OFF    0
-#define BULB_ON     1
+#define HEATER_OFF    0
+#define HEATER_ON     1
 
-static int bulb_status = BULB_OFF;      // 0: off, 1: on
+static int heater_status = HEATER_OFF;      // 0: off, 1: on
 static const char *get_responses[2] = { // responses for GET requests
     "off",
     "on"
@@ -30,9 +30,9 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
 static void res_event_handler(void);
 
 
-/* Lightbulb, can be turned on and off */
-EVENT_RESOURCE(res_lightbulb,
-               "{title:\"Lightbulb\", rt:\"bulb\", ops:\"GET|POST|PUT\"}",
+/* Heater, can be turned on and off */
+EVENT_RESOURCE(res_heater,
+               "{title:\"Heater\", rt:\"heater\", ops:\"GET|POST|PUT\"}",
                res_get_handler,
                res_post_handler,
                res_post_handler,
@@ -47,9 +47,9 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
 {
     int len;
 
-    /* Current status of the lightbulb */
-    len = strlen(get_responses[bulb_status]);
-    memcpy(buffer, get_responses[bulb_status], len);
+    /* Current status of the heater */
+    len = strlen(get_responses[heater_status]);
+    memcpy(buffer, get_responses[heater_status], len);
 
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_header_etag(response, (uint8_t *)&len, 1);
@@ -64,7 +64,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
 {
     size_t len = 0;
     const char *mode = NULL;
-    uint8_t led = LEDS_YELLOW;     /* Lightbulb emulated by yellow LED */
+    uint8_t led = LEDS_RED;     /* Heater emulated by red LED */
     int success = 0;
 
     len = coap_get_post_variable(request, "mode", &mode);
@@ -74,19 +74,19 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
 
         if (strncmp(mode, "on", len) == 0) {
             leds_on(LEDS_NUM_TO_MASK(led));
-            bulb_status = BULB_ON;
+            heater_status = HEATER_ON;
             success = 1;
         } else if (strncmp(mode, "off", len) == 0) {
             leds_off(LEDS_NUM_TO_MASK(led));
-            bulb_status = BULB_OFF;
+            heater_status = HEATER_OFF;
             success = 1;
         } else if (strncmp(mode, "toggle", len) == 0) {
-            if (bulb_status == BULB_OFF) {
+            if (heater_status == HEATER_OFF) {
                 leds_on(LEDS_NUM_TO_MASK(led));
-                bulb_status = BULB_ON;
+                heater_status = HEATER_ON;
             } else {
                 leds_off(LEDS_NUM_TO_MASK(led));
-                bulb_status = BULB_OFF;
+                heater_status = HEATER_OFF;
             }
             success = 1;
         }
@@ -103,13 +103,13 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
         coap_set_status_code(response, BAD_REQUEST_4_00);
     } else {
         // notify about the change
-        res_lightbulb.trigger();
+        res_heater.trigger();
     }
 }
 
 
 static void res_event_handler(void)
 {
-    coap_notify_observers(&res_lightbulb);
+    coap_notify_observers(&res_heater);
 }
 
