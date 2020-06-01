@@ -81,11 +81,9 @@ public class SmartLights implements Runnable {
 					// corresponding lights
 					if (last_act.after(few_seconds_ago)) {
 						int pir_id = Integer.parseInt(pir.getNodeId());
-						System.out.println(String.format("PIR with id %d was activated shortly ago\n", pir_id));
 						for (ConstrainedDeviceResource light : lights) {
 							int light_id = Integer.parseInt(light.getNodeId());
 							if (matchingIds(pir_id, light_id)) {
-								System.out.println(String.format("And light with id %d matches\n", light_id));
 								light.doSet("on");
 							}
 						}

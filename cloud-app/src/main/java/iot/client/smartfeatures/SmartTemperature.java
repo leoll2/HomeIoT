@@ -12,8 +12,8 @@ public class SmartTemperature implements Runnable {
 		COLD, NORMAL, HOT
 	};
 
-	private static int COLD_THRESH = 230; // = 180; TODO
-	private static int HOT_THRESH = 250; // = 240; TODO
+	private static int COLD_THRESH = 200; // = 180; TODO restore original threshold
+	private static int HOT_THRESH = 220;  // = 240; TODO restore original threshold
 	private static Boolean enabled = true;
 
 	private static SmartTemperature smart_temp;

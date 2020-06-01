@@ -11,8 +11,7 @@ public class ResourceCoapClient extends CoapClient implements Runnable {
 
 	private String res_uri; // full URI to locate the resource univocally
 	private ConstrainedDeviceResource cdr; // reference to the associate ConstrainedDeviceResource
-	private CoapClient post_client; // client for post requests
-	private CoapClient obs_client; // client for observing
+	private CoapClient client; // client for observing
 
 	/**
 	 * Do nothing
@@ -36,7 +35,7 @@ public class ResourceCoapClient extends CoapClient implements Runnable {
 	 */
 	public Boolean doPost(String payload) {
 
-		CoapResponse response = post_client.post(payload, MediaTypeRegistry.TEXT_PLAIN);
+		CoapResponse response = client.post(payload, MediaTypeRegistry.TEXT_PLAIN);
 		return ResponseCode.isSuccess(response.getCode());
 	}
 
@@ -46,15 +45,14 @@ public class ResourceCoapClient extends CoapClient implements Runnable {
 		this.res_uri = String.format("coap://[%s]:5683/%s", ip, path);
 		this.cdr = cdr;
 
-		post_client = new CoapClient(this.res_uri);
-		obs_client = new CoapClient(this.res_uri);
+		client = new CoapClient(this.res_uri);
 	}
 
 	@Override
 	public void run() {
 
 		// CoAP observing
-		CoapObserveRelation obs_rel = this.obs_client.observe(new CoapHandler() {
+		CoapObserveRelation obs_rel = this.client.observe(new CoapHandler() {
 			public void onLoad(CoapResponse resp) {
 				String obs_resp_text = resp.getResponseText();
 				cdr.update(obs_resp_text);
