@@ -40,6 +40,40 @@ A couple of automated smart services are offered:
 - `Smart Temperature`: when the average temperature recorded by the thermometers is above or below certain thresholds, 
 the heaters or the air conditioners are switched on accordingly.
 
+## Usage
+
+Clone the project in a folder inside Contiki, like `contiki-ng/examples/HomeIoT`.  
+
+Assign another IPv6 address to the loopback interface, to make the registration server reachable from the devices:
+```
+sudo ip -6 addr add 2001:0db8:0:f101::1/64 dev lo
+```
+
+### Cooja
+Start Cooja, then import the simulation `home_simulation.csc`.  
+
+Set the simulation speed to 100%, and start it *after* the cloud app (see the next steps).
+
+### Border router
+From another terminal, connect to the border router:
+```
+cd border-router
+make TARGET=cooja connect-router-cooja
+```
+
+### Cloud application
+
+Open another terminal to compile the cloud application:
+```
+cd cloud-app
+mvn install
+```
+Then launch it:
+```
+cd target
+java -jar home-iot-0.0.1-SNAPSHOT.jar
+```
+
 ## Issues
 
 If you encounter any problem, feel free to open an issue. I am open to pull requests as well.
