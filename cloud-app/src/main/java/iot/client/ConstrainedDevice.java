@@ -58,7 +58,16 @@ public class ConstrainedDevice {
 	 */
 	public void cleanExpiredResources() {
 
-		resources.removeIf(r -> r.isExpired());
+		List<ConstrainedDeviceResource> toremove = new ArrayList<ConstrainedDeviceResource>();
+		for (ConstrainedDeviceResource r : resources) {
+			if (r.isExpired()) {
+				toremove.add(r);
+			}
+		}
+		for (ConstrainedDeviceResource r : toremove) {
+			r.teardown();
+		}
+		resources.removeAll(toremove);
 	}
 
 	/**

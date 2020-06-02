@@ -59,7 +59,7 @@ public class RegexBox {
         		"^\\s*set" + "\\s+" + ipv6PatternString + "\\s+" + coapResourcePathPatternString + "\\s*" + "$",
         setT2PatternString =
         		"^\\s*set" + "\\s+" + ipv6PatternString + "\\s+" + coapResourcePathPatternString + "\\s+"
-        		+ integerPatternString + "\\s*" + "$",
+        		+ alphanumsymbPatternString + "\\s*" + "$",
         setT3PatternString =
         		"^\\s*set" + "\\s+" + coapResourceTypePatternString + "\\s*" + "$",
         setT4PatternString =

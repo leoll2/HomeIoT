@@ -205,6 +205,11 @@ public abstract class ConstrainedDeviceResource {
 		return exp_time.before(new Date());
 	}
 
+	public void teardown() {
+
+		coap_client.stop();
+	}
+
 	public final String toString() {
 		return String.format("%-25s | %-16s | %-20s | %-8s \n", "[" + this.ip + "]", this.path, this.desc, this.nodeid);
 	}
